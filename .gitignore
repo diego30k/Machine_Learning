@@ -137,3 +137,11 @@ $RECYCLE.BIN/
 
 # Windows shortcuts
 *.lnk
+
+# CSV
+# ==========================
+*.csv
+*.xls
+*.xlsx
+*.rar
+*.zip
