@@ -1,0 +1,226 @@
+{
+ "metadata": {
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 3
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython3",
+   "version": "3.7.6-final"
+  },
+  "orig_nbformat": 2,
+  "kernelspec": {
+   "name": "python3",
+   "display_name": "Python 3"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 2,
+ "cells": [
+  {
+   "cell_type": "code",
+   "execution_count": 3,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "import pyspark\n",
+    "from pyspark import SparkConf\n",
+    "from pyspark.sql import SparkSession"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 4,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "spark = SparkSession \\\n",
+    "    .builder \\\n",
+    "    .appName(\"Our first Python Spark SQL example\") \\\n",
+    "    .getOrCreate()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 5,
+   "metadata": {},
+   "outputs": [
+    {
+     "output_type": "execute_result",
+     "data": {
+      "text/plain": "[('spark.app.name', 'Our first Python Spark SQL example'),\n ('spark.rdd.compress', 'True'),\n ('spark.serializer.objectStreamReset', '100'),\n ('spark.driver.port', '34083'),\n ('spark.master', 'local[*]'),\n ('spark.submit.pyFiles', ''),\n ('spark.executor.id', 'driver'),\n ('spark.app.id', 'local-1596859215034'),\n ('spark.submit.deployMode', 'client'),\n ('spark.driver.host', '192.168.0.3'),\n ('spark.ui.showConsoleProgress', 'true')]"
+     },
+     "metadata": {},
+     "execution_count": 5
+    }
+   ],
+   "source": [
+    "spark.sparkContext.getConf().getAll()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 6,
+   "metadata": {},
+   "outputs": [
+    {
+     "output_type": "execute_result",
+     "data": {
+      "text/plain": "<pyspark.sql.session.SparkSession at 0x7efcd1359590>",
+      "text/html": "\n            <div>\n                <p><b>SparkSession - in-memory</b></p>\n                \n        <div>\n            <p><b>SparkContext</b></p>\n\n            <p><a href=\"http://192.168.0.3:4040\">Spark UI</a></p>\n\n            <dl>\n              <dt>Version</dt>\n                <dd><code>v3.0.0</code></dd>\n              <dt>Master</dt>\n                <dd><code>local[*]</code></dd>\n              <dt>AppName</dt>\n                <dd><code>Our first Python Spark SQL example</code></dd>\n            </dl>\n        </div>\n        \n            </div>\n        "
+     },
+     "metadata": {},
+     "execution_count": 6
+    }
+   ],
+   "source": [
+    "spark"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 12,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "apps = spark.read.format('com.databricks.spark.csv') \\\n",
+    "    .options(header='true', inferschema='true') \\\n",
+    "    .load('../../home/diego/Documents/notebooks/data/gplay/googleplaystore.csv')"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 14,
+   "metadata": {
+    "tags": []
+   },
+   "outputs": [
+    {
+     "output_type": "stream",
+     "name": "stdout",
+     "text": "root\n |-- App: string (nullable = true)\n |-- Category: string (nullable = true)\n |-- Rating: string (nullable = true)\n |-- Reviews: string (nullable = true)\n |-- Size: string (nullable = true)\n |-- Installs: string (nullable = true)\n |-- Type: string (nullable = true)\n |-- Price: string (nullable = true)\n |-- Content Rating: string (nullable = true)\n |-- Genres: string (nullable = true)\n |-- Last Updated: string (nullable = true)\n |-- Current Ver: string (nullable = true)\n |-- Android Ver: string (nullable = true)\n\n"
+    }
+   ],
+   "source": [
+    "apps.printSchema()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 15,
+   "metadata": {},
+   "outputs": [
+    {
+     "output_type": "execute_result",
+     "data": {
+      "text/plain": "DataFrame[summary: string, App: string, Category: string, Rating: string, Reviews: string, Size: string, Installs: string, Type: string, Price: string, Content Rating: string, Genres: string, Last Updated: string, Current Ver: string, Android Ver: string]"
+     },
+     "metadata": {},
+     "execution_count": 15
+    }
+   ],
+   "source": [
+    "apps.describe()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 16,
+   "metadata": {
+    "tags": []
+   },
+   "outputs": [
+    {
+     "output_type": "stream",
+     "name": "stdout",
+     "text": "+--------------------+--------------+------+-------+----+--------+----+-----+--------------+------------+---------------+-----------+------------+\n|                 App|      Category|Rating|Reviews|Size|Installs|Type|Price|Content Rating|      Genres|   Last Updated|Current Ver| Android Ver|\n+--------------------+--------------+------+-------+----+--------+----+-----+--------------+------------+---------------+-----------+------------+\n|Photo Editor & Ca...|ART_AND_DESIGN|   4.1|    159| 19M| 10,000+|Free|    0|      Everyone|Art & Design|January 7, 2018|      1.0.0|4.0.3 and up|\n+--------------------+--------------+------+-------+----+--------+----+-----+--------------+------------+---------------+-----------+------------+\nonly showing top 1 row\n\n"
+    }
+   ],
+   "source": [
+    "apps.show(n=1)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 18,
+   "metadata": {},
+   "outputs": [
+    {
+     "output_type": "execute_result",
+     "data": {
+      "text/plain": "[Row(App='Photo Editor & Candy Camera & Grid & ScrapBook', Category='ART_AND_DESIGN', Rating='4.1', Reviews='159', Size='19M', Installs='10,000+', Type='Free', Price='0', Content Rating='Everyone', Genres='Art & Design', Last Updated='January 7, 2018', Current Ver='1.0.0', Android Ver='4.0.3 and up'),\n Row(App='Coloring book moana', Category='ART_AND_DESIGN', Rating='3.9', Reviews='967', Size='14M', Installs='500,000+', Type='Free', Price='0', Content Rating='Everyone', Genres='Art & Design;Pretend Play', Last Updated='January 15, 2018', Current Ver='2.0.0', Android Ver='4.0.3 and up'),\n Row(App='U Launcher Lite – FREE Live Cool Themes, Hide Apps', Category='ART_AND_DESIGN', Rating='4.7', Reviews='87510', Size='8.7M', Installs='5,000,000+', Type='Free', Price='0', Content Rating='Everyone', Genres='Art & Design', Last Updated='August 1, 2018', Current Ver='1.2.4', Android Ver='4.0.3 and up'),\n Row(App='Sketch - Draw & Paint', Category='ART_AND_DESIGN', Rating='4.5', Reviews='215644', Size='25M', Installs='50,000,000+', Type='Free', Price='0', Content Rating='Teen', Genres='Art & Design', Last Updated='June 8, 2018', Current Ver='Varies with device', Android Ver='4.2 and up'),\n Row(App='Pixel Draw - Number Art Coloring Book', Category='ART_AND_DESIGN', Rating='4.3', Reviews='967', Size='2.8M', Installs='100,000+', Type='Free', Price='0', Content Rating='Everyone', Genres='Art & Design;Creativity', Last Updated='June 20, 2018', Current Ver='1.1', Android Ver='4.4 and up')]"
+     },
+     "metadata": {},
+     "execution_count": 18
+    }
+   ],
+   "source": [
+    "apps.take(5)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 20,
+   "metadata": {
+    "tags": []
+   },
+   "outputs": [
+    {
+     "output_type": "stream",
+     "name": "stdout",
+     "text": "+-------+-------------+\n|summary|     Category|\n+-------+-------------+\n|  count|        10841|\n|   mean|          1.9|\n| stddev|          NaN|\n|    min| traffic jams|\n|    max|      WEATHER|\n+-------+-------------+\n\n"
+    }
+   ],
+   "source": [
+    "apps.describe(\"Category\").show()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "apps.count"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 19,
+   "metadata": {},
+   "outputs": [
+    {
+     "output_type": "error",
+     "ename": "KeyboardInterrupt",
+     "evalue": "",
+     "traceback": [
+      "\u001b[0;31m---------------------------------------------------------------------------\u001b[0m",
+      "\u001b[0;31mKeyboardInterrupt\u001b[0m                         Traceback (most recent call last)",
+      "\u001b[0;32m<ipython-input-19-ba81ed284561>\u001b[0m in \u001b[0;36m<module>\u001b[0;34m\u001b[0m\n\u001b[1;32m      1\u001b[0m \u001b[0mpath\u001b[0m \u001b[0;34m=\u001b[0m \u001b[0;34m'hdfs://ec2-34-218-86-174.us-west-2.compute.amazonaws.com:9000/sparkify/sparkify_log_small.json'\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0;32m----> 2\u001b[0;31m \u001b[0mspark\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mread\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mjson\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mpath\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0m",
+      "\u001b[0;32m~/anaconda3/lib/python3.7/site-packages/pyspark/sql/readwriter.py\u001b[0m in \u001b[0;36mjson\u001b[0;34m(self, path, schema, primitivesAsString, prefersDecimal, allowComments, allowUnquotedFieldNames, allowSingleQuotes, allowNumericLeadingZero, allowBackslashEscapingAnyCharacter, mode, columnNameOfCorruptRecord, dateFormat, timestampFormat, multiLine, allowUnquotedControlChars, lineSep, samplingRatio, dropFieldIfAllNull, encoding, locale, pathGlobFilter, recursiveFileLookup)\u001b[0m\n\u001b[1;32m    298\u001b[0m             \u001b[0mpath\u001b[0m \u001b[0;34m=\u001b[0m \u001b[0;34m[\u001b[0m\u001b[0mpath\u001b[0m\u001b[0;34m]\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m    299\u001b[0m         \u001b[0;32mif\u001b[0m \u001b[0mtype\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mpath\u001b[0m\u001b[0;34m)\u001b[0m \u001b[0;34m==\u001b[0m \u001b[0mlist\u001b[0m\u001b[0;34m:\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0;32m--> 300\u001b[0;31m             \u001b[0;32mreturn\u001b[0m \u001b[0mself\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0m_df\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mself\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0m_jreader\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mjson\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mself\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0m_spark\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0m_sc\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0m_jvm\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mPythonUtils\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mtoSeq\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mpath\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0m\u001b[1;32m    301\u001b[0m         \u001b[0;32melif\u001b[0m \u001b[0misinstance\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mpath\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0mRDD\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m:\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m    302\u001b[0m             \u001b[0;32mdef\u001b[0m \u001b[0mfunc\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0miterator\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m:\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n",
+      "\u001b[0;32m~/anaconda3/lib/python3.7/site-packages/py4j/java_gateway.py\u001b[0m in \u001b[0;36m__call__\u001b[0;34m(self, *args)\u001b[0m\n\u001b[1;32m   1301\u001b[0m             \u001b[0mproto\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mEND_COMMAND_PART\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m   1302\u001b[0m \u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0;32m-> 1303\u001b[0;31m         \u001b[0manswer\u001b[0m \u001b[0;34m=\u001b[0m \u001b[0mself\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mgateway_client\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0msend_command\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mcommand\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0m\u001b[1;32m   1304\u001b[0m         return_value = get_return_value(\n\u001b[1;32m   1305\u001b[0m             answer, self.gateway_client, self.target_id, self.name)\n",
+      "\u001b[0;32m~/anaconda3/lib/python3.7/site-packages/py4j/java_gateway.py\u001b[0m in \u001b[0;36msend_command\u001b[0;34m(self, command, retry, binary)\u001b[0m\n\u001b[1;32m   1031\u001b[0m         \u001b[0mconnection\u001b[0m \u001b[0;34m=\u001b[0m \u001b[0mself\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0m_get_connection\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m   1032\u001b[0m         \u001b[0;32mtry\u001b[0m\u001b[0;34m:\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0;32m-> 1033\u001b[0;31m             \u001b[0mresponse\u001b[0m \u001b[0;34m=\u001b[0m \u001b[0mconnection\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0msend_command\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mcommand\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0m\u001b[1;32m   1034\u001b[0m             \u001b[0;32mif\u001b[0m \u001b[0mbinary\u001b[0m\u001b[0;34m:\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m   1035\u001b[0m                 \u001b[0;32mreturn\u001b[0m \u001b[0mresponse\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0mself\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0m_create_connection_guard\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mconnection\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n",
+      "\u001b[0;32m~/anaconda3/lib/python3.7/site-packages/py4j/java_gateway.py\u001b[0m in \u001b[0;36msend_command\u001b[0;34m(self, command)\u001b[0m\n\u001b[1;32m   1198\u001b[0m \u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m   1199\u001b[0m         \u001b[0;32mtry\u001b[0m\u001b[0;34m:\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0;32m-> 1200\u001b[0;31m             \u001b[0manswer\u001b[0m \u001b[0;34m=\u001b[0m \u001b[0msmart_decode\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mself\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mstream\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mreadline\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m[\u001b[0m\u001b[0;34m:\u001b[0m\u001b[0;34m-\u001b[0m\u001b[0;36m1\u001b[0m\u001b[0;34m]\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0m\u001b[1;32m   1201\u001b[0m             \u001b[0mlogger\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mdebug\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0;34m\"Answer received: {0}\"\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mformat\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0manswer\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m   1202\u001b[0m             \u001b[0;32mif\u001b[0m \u001b[0manswer\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mstartswith\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mproto\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mRETURN_MESSAGE\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m:\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n",
+      "\u001b[0;32m~/anaconda3/lib/python3.7/socket.py\u001b[0m in \u001b[0;36mreadinto\u001b[0;34m(self, b)\u001b[0m\n\u001b[1;32m    587\u001b[0m         \u001b[0;32mwhile\u001b[0m \u001b[0;32mTrue\u001b[0m\u001b[0;34m:\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m    588\u001b[0m             \u001b[0;32mtry\u001b[0m\u001b[0;34m:\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0;32m--> 589\u001b[0;31m                 \u001b[0;32mreturn\u001b[0m \u001b[0mself\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0m_sock\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mrecv_into\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mb\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0m\u001b[1;32m    590\u001b[0m             \u001b[0;32mexcept\u001b[0m \u001b[0mtimeout\u001b[0m\u001b[0;34m:\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m    591\u001b[0m                 \u001b[0mself\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0m_timeout_occurred\u001b[0m \u001b[0;34m=\u001b[0m \u001b[0;32mTrue\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n",
+      "\u001b[0;31mKeyboardInterrupt\u001b[0m: "
+     ]
+    }
+   ],
+   "source": [
+    "path = 'hdfs://ec2-34-218-86-174.us-west-2.compute.amazonaws.com:9000/sparkify/sparkify_log_small.json'\n",
+    "logs = spark.read.json(path)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": []
+  }
+ ]
+}

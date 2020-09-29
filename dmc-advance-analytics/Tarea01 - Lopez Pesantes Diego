@@ -1,0 +1,68 @@
+#########
+# CASO 1#
+#########
+# Imputacion, metodo 3
+library(randomForest)
+dim(datos_2)
+set.seed(111)
+datos_3 <- cbind(datos_2, FLG_RENO = datos$FLG_RENO)
+datos_numRF <- rfImpute(as.factor(datos_3$FLG_RENO) ~ ., 
+                        datos_3[, 5:6], 
+                        ntree=3)   
+summary(datos_3[, 5:6])
+hist(datos_3[, 5], breaks = 10)
+summary(datos_numRF)
+hist(datos_numRF[, 2], breaks = 10)
+
+# CASO 2 y TAREA 1: describir y mejorar el codigo
+
+# Imputacion, metodo 4
+#1. El primer "for" hacen un bucle que recorre desde la columna 5 hacia adelante de la matriz y el segundo "for" recorre todas las filas de la matriz.
+#2. El objetivo de esto es recorrer toda la matriz y reemplazar los valores nulos con una de dos opciones: el minimo valor de la columna (en caso el minimo y maximo fueran iguales) o con un valor aleatorio de la columna (para lo cual se usa la funcion seed para replicar los datos aleatorios y la funcion sample)
+#3. Si quisieramos seguir trabajando con "for" se corregirian los siguientes puntos:
+### El primer bucle deberia tomar desde la primera columna
+### Se reordenan los "if" para evitar entrar entre varias condicionales (primero se debe consultar si el valor es nulo)
+
+
+for(j in 1:ncol(datos_2)){
+  mini <- min(datos_2[, j], na.rm = TRUE)
+  maxi <- max(datos_2[, j], na.rm = TRUE)
+  for(i in 1:nrow(datos_2)){
+    if(is.na(datos_2[ ,j][i]) == TRUE){
+    	if(mini==maxi){
+    		datos_2[ , j][i] <- mini
+    	}else{
+    		set.seed(100)
+    		datos_2[ , j][i] <- sample(na.omit(datos_2[ , j]), 1, replace = T)
+    	}
+    }
+  }
+}
+
+
+#el for suele ser muy costoso en procesamiento, para ese caso podemos reemplazarlo utilizando la libreria mice
+imputed_data <- mice(datos_2, m = 1,maxit = 1, method = "sample", seed = 2018, print = F)
+complete_data <- mice::complete(imputed_data_3)
+imputed_data_3 <- mice.input.sample(datos_2,seed=100, print = F, m = 30)
+
+
+
+#########
+# CASO 2#
+#########
+#El codigo es correcto, ya que solo trata de normalizar las columnas numericas, aunque para que sea mas efectivo habria que revisar las distibuciones de las variables para determinar si la normalizacion es el mejor metodo
+df_norm = df.copy()
+from sklearn.preprocessing import MinMaxScaler
+scaler = MinMaxScaler()
+scaler.fit(df_norm[var_num])
+df_norm[var_num] = scaler.transform(df_norm[var_num])
+df_norm[var_num].head()
+
+#estandarizacion
+from sklearn.preprocessing import StandardScaler
+df_scaler = df.copy()
+scale = StandardScaler().fit(df_scaler[var_num])
+df_scaler[var_num] = scale.transform(df_scaler[var_num])
+
+
+
