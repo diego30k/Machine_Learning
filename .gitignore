@@ -146,3 +146,6 @@ $RECYCLE.BIN/
 *.rar
 *.zip
 *.txt
+
+# Mails
+ud120-projects/maildir/*.*
